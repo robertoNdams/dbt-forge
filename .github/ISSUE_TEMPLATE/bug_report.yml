@@ -1,0 +1,49 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What did you expect to happen, and what actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Minimal config to reproduce
+      description: A YAML snippet that triggers the issue (redact anything sensitive).
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: The command you ran and the full output / error.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: dbt-forge version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: dbt
+    attributes:
+      label: dbt-core + adapter version
+      placeholder: "dbt-core 1.8.x, dbt-duckdb 1.8.x"
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12.x"

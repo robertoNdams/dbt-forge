@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw landing data.
+    schema: raw
+    tables:
+      - name: customers
+        description: Raw customer records.
+        columns:
+          - name: id
+          - name: first_name
+          - name: last_name
+          - name: email
+      - name: orders
+        description: Raw order records.
+        columns:
+          - name: id
+          - name: user_id
+          - name: order_date
+          - name: status
+          - name: amount

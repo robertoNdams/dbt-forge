@@ -1,0 +1,10 @@
+name: 'dbt_forge'
+version: '0.1.0'
+config-version: 2
+
+require-dbt-version: [">=1.7.0", "<2.0.0"]
+
+macro-paths: ["macros"]
+
+# This package ships only macros; no models, seeds, or tests of its own
+# (integration tests live under integration_tests/).

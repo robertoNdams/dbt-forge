@@ -1,0 +1,25 @@
+name: 'jaffle_shop'
+version: '1.0.0'
+config-version: 2
+
+profile: 'jaffle_shop'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+target-path: "target"
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# All models default to view; overridden per-model via {{ config(...) }}
+# emitted by dbt-forge.
+models:
+  jaffle_shop:
+    +materialized: view
+
+# Source declarations live in models/sources.yml so dbt's source() resolves.
+seeds:
+  jaffle_shop:
+    +schema: raw

@@ -5,9 +5,9 @@ import pytest
 
 pytest.importorskip("pydantic")
 
-from pydantic import ValidationError  # noqa: E402
+from pydantic import ValidationError
 
-from dbt_forge_cli.config import ForgeConfig  # noqa: E402
+from dbt_forge_cli.config import ForgeConfig
 
 
 def _validate(model_dict):
@@ -35,9 +35,9 @@ def test_both_source_and_source_model_rejected():
 
 
 def test_source_format_enforced():
-    with pytest.raises(ValidationError, match="schema.table"):
+    with pytest.raises(ValidationError, match=r"schema\.table"):
         _validate({"name": "x", "source": "no_dot", "select_columns": ["*"]})
-    with pytest.raises(ValidationError, match="schema.table"):
+    with pytest.raises(ValidationError, match=r"schema\.table"):
         _validate({"name": "x", "source": "too.many.dots", "select_columns": ["*"]})
 
 

@@ -87,7 +87,7 @@ def validate_lineage(cfg: ForgeConfig) -> LineageReport:
             node, idx = stack[-1]
             if idx == 0:
                 if color[node] == GRAY:
-                    cycle = path[path.index(node):] + [node]
+                    cycle = [*path[path.index(node) :], node]
                     errors.append(
                         LineageError(
                             code="CYCLE",

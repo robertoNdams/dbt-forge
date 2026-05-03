@@ -9,7 +9,7 @@ in the CLI before any dbt invocation.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -63,10 +63,10 @@ class Filter(BaseModel):
 
     column: str
     op: Operator
-    value: Union[str, int, float, bool, list, None] = None
+    value: str | int | float | bool | list | None = None
 
     @model_validator(mode="after")
-    def _check_value_for_op(self) -> "Filter":
+    def _check_value_for_op(self) -> Filter:
         if self.op in {Operator.IS_NULL, Operator.IS_NOT_NULL} and self.value is not None:
             raise ValueError(f"Operator '{self.op.value}' must not have a value.")
         if self.op in {Operator.IN, Operator.NOT_IN} and not isinstance(self.value, list):
@@ -87,7 +87,7 @@ class Threshold(BaseModel):
 
     metric: str
     op: Operator
-    value: Union[int, float]
+    value: int | float
 
 
 class SortItem(BaseModel):
@@ -98,7 +98,7 @@ class SortItem(BaseModel):
     order: SortOrder = SortOrder.ASC
 
     @model_validator(mode="after")
-    def _exactly_one(self) -> "SortItem":
+    def _exactly_one(self) -> SortItem:
         if (self.metric is None) == (self.column is None):
             raise ValueError("sort item must have exactly one of `metric` or `column`.")
         return self
@@ -130,7 +130,7 @@ class IncludedSource(BaseModel):
     filters: list[Filter] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _check_source(self) -> "IncludedSource":
+    def _check_source(self) -> IncludedSource:
         if (self.source is None) == (self.source_model is None):
             raise ValueError(
                 f"Included source '{self.name}' must define exactly one of "
@@ -204,7 +204,7 @@ class ModelConfig(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def _exactly_one_source(self) -> "ModelConfig":
+    def _exactly_one_source(self) -> ModelConfig:
         if (self.source is None) == (self.source_model is None):
             raise ValueError(
                 f"Model '{self.name}' must define exactly one of "
@@ -213,15 +213,7 @@ class ModelConfig(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def _metrics_require_breakdown(self) -> "ModelConfig":
-        if self.metrics and not self.breakdown_by:
-            # An aggregation without GROUP BY collapses to a single row — usually a bug.
-            # We allow it but warn through validation context; explicit check below.
-            pass
-        return self
-
-    @model_validator(mode="after")
-    def _thresholds_reference_known_metrics(self) -> "ModelConfig":
+    def _thresholds_reference_known_metrics(self) -> ModelConfig:
         known = {m.name for m in self.metrics}
         for t in self.thresholds:
             if t.metric not in known:
@@ -232,7 +224,7 @@ class ModelConfig(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def _sort_references_known(self) -> "ModelConfig":
+    def _sort_references_known(self) -> ModelConfig:
         known_metrics = {m.name for m in self.metrics}
         known_columns = set(self.select_columns) | set(self.breakdown_by)
         for s in self.sort_by:
@@ -265,7 +257,7 @@ class ForgeConfig(BaseModel):
     models: list[ModelConfig]
 
     @model_validator(mode="after")
-    def _unique_names(self) -> "ForgeConfig":
+    def _unique_names(self) -> ForgeConfig:
         seen: set[str] = set()
         for m in self.models:
             if m.name in seen:

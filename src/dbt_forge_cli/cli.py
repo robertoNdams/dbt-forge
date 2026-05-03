@@ -121,7 +121,7 @@ def cli() -> None:
 @click.option(
     "--project-dir",
     type=click.Path(path_type=Path, exists=True, file_okay=False),
-    default=Path("."),
+    default=Path(),
     show_default=True,
 )
 @click.option(

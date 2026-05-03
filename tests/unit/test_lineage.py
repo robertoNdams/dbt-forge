@@ -5,8 +5,8 @@ import pytest
 
 pytest.importorskip("pydantic")
 
-from dbt_forge_cli.config import ForgeConfig  # noqa: E402
-from dbt_forge_cli.lineage import validate_lineage  # noqa: E402
+from dbt_forge_cli.config import ForgeConfig
+from dbt_forge_cli.lineage import validate_lineage
 
 
 def _cfg(*models):

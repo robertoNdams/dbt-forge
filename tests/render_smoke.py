@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from jinja_harness import build  # type: ignore  # noqa: E402
+from jinja_harness import build  # type: ignore[import-not-found]
 
 
 def section(title: str) -> None:

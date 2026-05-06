@@ -167,9 +167,7 @@ def generate(
         console.print(f"[red]{e}[/red]")
         sys.exit(1)
     except DbtRunError as e:
-        console.print(
-            f"[red]dbt failed (exit {e.returncode}):[/red]\n{e.stderr or e.stdout}"
-        )
+        console.print(f"[red]dbt failed (exit {e.returncode}):[/red]\n{e.stderr or e.stdout}")
         sys.exit(e.returncode or 1)
 
     if dry_run:
@@ -186,8 +184,7 @@ def generate(
     for p in result.skipped:
         console.print(f"  [yellow]·[/yellow] {p} (exists, skipped)")
     console.print(
-        f"[green]✓[/green] Wrote {len(result.written)} files to "
-        f"[cyan]{output_dir}[/cyan]."
+        f"[green]✓[/green] Wrote {len(result.written)} files to [cyan]{output_dir}[/cyan]."
     )
 
 

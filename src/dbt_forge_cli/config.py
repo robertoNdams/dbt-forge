@@ -13,7 +13,6 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
 # ---------------------------------------------------------------------------
 # Primitives
 # ---------------------------------------------------------------------------
@@ -185,9 +184,7 @@ class ModelConfig(BaseModel):
     @classmethod
     def _name_is_identifier(cls, v: str) -> str:
         if not v.replace("_", "").isalnum():
-            raise ValueError(
-                f"Model name '{v}' must contain only alphanumerics and underscores."
-            )
+            raise ValueError(f"Model name '{v}' must contain only alphanumerics and underscores.")
         if v[0].isdigit():
             raise ValueError(f"Model name '{v}' must not start with a digit.")
         return v
@@ -198,17 +195,14 @@ class ModelConfig(BaseModel):
         if v is None:
             return v
         if v.count(".") != 1 or any(part == "" for part in v.split(".")):
-            raise ValueError(
-                f"`source` must be of the form 'schema.table' (got '{v}')."
-            )
+            raise ValueError(f"`source` must be of the form 'schema.table' (got '{v}').")
         return v
 
     @model_validator(mode="after")
     def _exactly_one_source(self) -> ModelConfig:
         if (self.source is None) == (self.source_model is None):
             raise ValueError(
-                f"Model '{self.name}' must define exactly one of "
-                "`source` or `source_model`."
+                f"Model '{self.name}' must define exactly one of `source` or `source_model`."
             )
         return self
 
@@ -230,17 +224,11 @@ class ModelConfig(BaseModel):
         for s in self.sort_by:
             if s.metric and s.metric not in known_metrics:
                 raise ValueError(
-                    f"Model '{self.name}': sort_by references unknown metric "
-                    f"'{s.metric}'."
+                    f"Model '{self.name}': sort_by references unknown metric '{s.metric}'."
                 )
-            if (
-                s.column
-                and "*" not in known_columns
-                and s.column not in known_columns
-            ):
+            if s.column and "*" not in known_columns and s.column not in known_columns:
                 raise ValueError(
-                    f"Model '{self.name}': sort_by references unknown column "
-                    f"'{s.column}'."
+                    f"Model '{self.name}': sort_by references unknown column '{s.column}'."
                 )
         return self
 

@@ -9,4 +9,3 @@ group by customer_id
 having total_revenue > 100
 order by
     total_revenue desc
-

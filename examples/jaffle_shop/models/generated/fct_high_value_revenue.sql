@@ -16,4 +16,3 @@ from paid_high_value
 group by customer_id
 order by
     hv_revenue desc
-

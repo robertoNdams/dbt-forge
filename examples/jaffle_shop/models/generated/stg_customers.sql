@@ -6,4 +6,3 @@ select
     last_name,
     email
 from {{ source('raw', 'customers') }}
-

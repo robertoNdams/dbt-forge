@@ -7,4 +7,3 @@ select
     amount
 from {{ source('raw', 'orders') }}
 where status != 'cancelled'
-

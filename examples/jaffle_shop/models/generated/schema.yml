@@ -45,4 +45,3 @@ models:
           - not_null
       - name: hv_revenue
         description: Sum of amounts for orders >= 50.
-

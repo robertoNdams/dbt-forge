@@ -1,4 +1,5 @@
 """Tests for the dbt-stdout block parser."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,13 +9,13 @@ from dbt_forge_cli.runner import _parse_emitted_blocks
 
 def test_parses_single_file_block():
     stdout = (
-        'some dbt log line\n'
+        "some dbt log line\n"
         '<<<DBT_FORGE_FILE path="models/generated/foo.sql">>>\n'
-        '{{ config(materialized=\'view\') }}\n'
-        '\n'
-        'select * from x\n'
-        '<<<DBT_FORGE_END>>>\n'
-        'another log line\n'
+        "{{ config(materialized='view') }}\n"
+        "\n"
+        "select * from x\n"
+        "<<<DBT_FORGE_END>>>\n"
+        "another log line\n"
     )
     blocks = _parse_emitted_blocks(stdout)
     assert len(blocks) == 1
@@ -28,7 +29,7 @@ def test_parses_single_file_block():
 def test_parses_multiple_blocks_in_order():
     stdout = (
         '<<<DBT_FORGE_FILE path="a.sql">>>\nA\n<<<DBT_FORGE_END>>>\n'
-        'noise\n'
+        "noise\n"
         '<<<DBT_FORGE_FILE path="b.sql">>>\nB1\nB2\n<<<DBT_FORGE_END>>>\n'
     )
     blocks = _parse_emitted_blocks(stdout)

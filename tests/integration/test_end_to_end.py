@@ -56,10 +56,14 @@ def test_full_pipeline(example_dir: Path) -> None:
     # 3. dbt-forge generate — write the .sql + schema.yml files
     _run(
         [
-            "dbt-forge", "generate",
-            "--config", "config/models.yml",
-            "--output-dir", "models/generated",
-            "--project-dir", ".",
+            "dbt-forge",
+            "generate",
+            "--config",
+            "config/models.yml",
+            "--output-dir",
+            "models/generated",
+            "--project-dir",
+            ".",
             "--profiles-dir=.",
             "--overwrite",
         ],
@@ -94,9 +98,7 @@ def test_full_pipeline(example_dir: Path) -> None:
     assert db.exists()
     con = duckdb.connect(str(db), read_only=True)
     try:
-        rows = con.execute(
-            "select count(*) from main.fct_revenue_per_customer"
-        ).fetchone()
+        rows = con.execute("select count(*) from main.fct_revenue_per_customer").fetchone()
         assert rows is not None and rows[0] >= 1, "fct_revenue_per_customer is empty"
 
         # The HAVING clause should have filtered out customers with revenue <= 100
@@ -114,10 +116,14 @@ def test_dry_run_does_not_write(example_dir: Path) -> None:
 
     proc = _run(
         [
-            "dbt-forge", "generate",
-            "--config", "config/models.yml",
-            "--output-dir", "models/generated",
-            "--project-dir", ".",
+            "dbt-forge",
+            "generate",
+            "--config",
+            "config/models.yml",
+            "--output-dir",
+            "models/generated",
+            "--project-dir",
+            ".",
             "--profiles-dir=.",
             "--dry-run",
         ],
@@ -137,10 +143,14 @@ def test_validate_only_does_not_invoke_dbt(example_dir: Path) -> None:
     """`--validate-only` should never shell out to dbt."""
     proc = _run(
         [
-            "dbt-forge", "generate",
-            "--config", "config/models.yml",
-            "--output-dir", "models/generated",
-            "--project-dir", ".",
+            "dbt-forge",
+            "generate",
+            "--config",
+            "config/models.yml",
+            "--output-dir",
+            "models/generated",
+            "--project-dir",
+            ".",
             "--validate-only",
         ],
         cwd=example_dir,

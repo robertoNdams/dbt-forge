@@ -1,4 +1,5 @@
 """Drives the harness through every template layer."""
+
 from __future__ import annotations
 
 import sys
@@ -24,8 +25,12 @@ def main() -> None:
         "name": "stg_orders",
         "source": "raw.orders",
         "select_columns": ["order_id", "customer_id", "amount"],
-        "filters": [], "metrics": [], "breakdown_by": [],
-        "thresholds": [], "sort_by": [], "include_sources": [],
+        "filters": [],
+        "metrics": [],
+        "breakdown_by": [],
+        "thresholds": [],
+        "sort_by": [],
+        "include_sources": [],
     }
     print(h.call("render_base_select", cfg))
 
@@ -60,7 +65,9 @@ def main() -> None:
             {"name": "n_customers", "based_on": "customer_id", "operation": "count_distinct"},
         ],
         "breakdown_by": ["customer_id"],
-        "thresholds": [], "sort_by": [], "include_sources": [],
+        "thresholds": [],
+        "sort_by": [],
+        "include_sources": [],
     }
     print(h.call("render_aggregation_select", cfg4))
 
@@ -91,7 +98,9 @@ def main() -> None:
         "source": "raw.orders",
         "select_columns": ["order_id", "customer_id", "amount"],
         "filters": [{"column": "status", "op": "!=", "value": "cancelled"}],
-        "metrics": [], "breakdown_by": [], "thresholds": [],
+        "metrics": [],
+        "breakdown_by": [],
+        "thresholds": [],
         "sort_by": [{"column": "order_id", "order": "asc"}],
         "include_sources": [],
     }

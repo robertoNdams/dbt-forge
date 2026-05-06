@@ -91,9 +91,7 @@ def validate_lineage(cfg: ForgeConfig) -> LineageReport:
                     errors.append(
                         LineageError(
                             code="CYCLE",
-                            message=(
-                                "Cycle detected: " + " -> ".join(cycle)
-                            ),
+                            message=("Cycle detected: " + " -> ".join(cycle)),
                         )
                     )
                     stack.pop()

@@ -91,9 +91,7 @@ class DbtRunError(RuntimeError):
 
 class FileExistsConflict(RuntimeError):
     def __init__(self, path: Path) -> None:
-        super().__init__(
-            f"Refusing to overwrite '{path}'. Pass --overwrite to replace."
-        )
+        super().__init__(f"Refusing to overwrite '{path}'. Pass --overwrite to replace.")
         self.path = path
 
 

@@ -1,4 +1,5 @@
 """Macro-render tests using the Jinja harness."""
+
 from __future__ import annotations
 
 import pytest
@@ -17,8 +18,12 @@ def _basecfg(**overrides):
         "name": "test_model",
         "source": "raw.t",
         "select_columns": ["*"],
-        "filters": [], "metrics": [], "breakdown_by": [],
-        "thresholds": [], "sort_by": [], "include_sources": [],
+        "filters": [],
+        "metrics": [],
+        "breakdown_by": [],
+        "thresholds": [],
+        "sort_by": [],
+        "include_sources": [],
     }
     base.update(overrides)
     return base
@@ -50,10 +55,12 @@ def test_filtered_select_no_filters_passthrough(h):
 
 
 def test_filtered_select_combines_clauses(h):
-    cfg = _basecfg(filters=[
-        {"column": "status", "op": "!=", "value": "x"},
-        {"column": "amount", "op": ">", "value": 0},
-    ])
+    cfg = _basecfg(
+        filters=[
+            {"column": "status", "op": "!=", "value": "x"},
+            {"column": "amount", "op": ">", "value": 0},
+        ]
+    )
     out = h.call("render_filtered_select", cfg)
     assert "where status != 'x'" in out
     assert "and amount > 0" in out

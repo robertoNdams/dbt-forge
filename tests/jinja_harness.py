@@ -66,11 +66,13 @@ def build():
 
     # Pass 1: compile with placeholders; we need `module` first to wire up
     # adapter.dispatch and dbt_forge proxy that reference `module` itself.
-    env.globals.update({
-        "exceptions": type("E", (), {"raise_compiler_error": staticmethod(_raise)})(),
-        "log": _log,
-        "print": _print,
-    })
+    env.globals.update(
+        {
+            "exceptions": type("E", (), {"raise_compiler_error": staticmethod(_raise)})(),
+            "log": _log,
+            "print": _print,
+        }
+    )
 
     holder: dict[str, Any] = {}
 

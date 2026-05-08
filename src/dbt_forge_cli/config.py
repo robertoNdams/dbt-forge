@@ -9,7 +9,7 @@ in the CLI before any dbt invocation.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -62,7 +62,7 @@ class Filter(BaseModel):
 
     column: str
     op: Operator
-    value: str | int | float | bool | list | None = None
+    value: str | int | float | bool | list[Any] | None = None
 
     @model_validator(mode="after")
     def _check_value_for_op(self) -> Filter:

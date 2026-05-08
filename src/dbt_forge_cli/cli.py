@@ -28,6 +28,7 @@ from .runner import (
     RunnerOptions,
     invoke_generate_model,
 )
+from .validators import BusinessRuleError
 from .validators import run_all as run_business_rules
 
 console = Console()
@@ -75,12 +76,12 @@ def _validate(cfg_path: Path) -> ForgeConfig:
             console.print(f"  • [yellow]{err.code}[/yellow]: {err.message}")
         sys.exit(1)
 
-    rule_errors = run_business_rules(cfg)
+    rule_errors: list[BusinessRuleError] = run_business_rules(cfg)
     if rule_errors:
         console.print(Panel.fit("[red]Business-rule validation failed[/red]"))
-        for err in rule_errors:
+        for error in rule_errors:
             console.print(
-                f"  • [magenta]{err.model}[/magenta] [yellow]{err.code}[/yellow]: {err.message}"
+                f"  • [magenta]{error.model}[/magenta] [yellow]{error.code}[/yellow]: {error.message}"
             )
         sys.exit(1)
 

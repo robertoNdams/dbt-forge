@@ -3,9 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
-pytest.importorskip("pydantic")
-
 from pydantic import ValidationError
 
 from dbt_forge_cli.config import ForgeConfig

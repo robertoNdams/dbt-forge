@@ -28,7 +28,6 @@ from .runner import (
     RunnerOptions,
     invoke_generate_model,
 )
-from .validators import BusinessRuleError
 from .validators import run_all as run_business_rules
 
 console = Console()
@@ -72,16 +71,16 @@ def _validate(cfg_path: Path) -> ForgeConfig:
     lineage = validate_lineage(cfg)
     if not lineage.ok:
         console.print(Panel.fit("[red]Lineage validation failed[/red]"))
-        for err in lineage.errors:
-            console.print(f"  • [yellow]{err.code}[/yellow]: {err.message}")
+        for lin_err in lineage.errors:
+            console.print(f"  • [yellow]{lin_err.code}[/yellow]: {lin_err.message}")
         sys.exit(1)
 
-    rule_errors: list[BusinessRuleError] = run_business_rules(cfg)
+    rule_errors = run_business_rules(cfg)
     if rule_errors:
         console.print(Panel.fit("[red]Business-rule validation failed[/red]"))
-        for error in rule_errors:
+        for rule_err in rule_errors:
             console.print(
-                f"  • [magenta]{error.model}[/magenta] [yellow]{error.code}[/yellow]: {error.message}"
+                f"  • [magenta]{rule_err.model}[/magenta] [yellow]{rule_err.code}[/yellow]: {rule_err.message}"
             )
         sys.exit(1)
 
@@ -185,7 +184,7 @@ def generate(
     for p in result.skipped:
         console.print(f"  [yellow]·[/yellow] {p} (exists, skipped)")
     console.print(
-        f"[green]✓[/green] Wrote {len(result.written)} files to [cyan]{output_dir}[/cyan]."
+        f"[green]✓[/green] Wrote {len(result.written)} files to " f"[cyan]{output_dir}[/cyan]."
     )
 
 

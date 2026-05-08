@@ -18,6 +18,7 @@ pytest.importorskip("dbt.adapters.duckdb")  # actual import dbt-duckdb provides
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = REPO_ROOT / "examples" / "jaffle_shop"
+DBT_FORGE_PKG = REPO_ROOT / "dbt" / "dbt_forge"
 
 
 pytestmark = pytest.mark.integration
@@ -25,13 +26,25 @@ pytestmark = pytest.mark.integration
 
 @pytest.fixture
 def example_dir(tmp_path: Path) -> Path:
-    """Copy the example into a tmp dir so we don't pollute the repo."""
+    """Copy the example into a tmp dir so we don't pollute the repo.
+
+    The example's `packages.yml` references the dbt_forge package via the
+    relative path `../../dbt/dbt_forge`, which only resolves from the repo
+    layout. We rewrite it here to an absolute path so the test is independent
+    of where pytest copies the fixture.
+    """
     target = tmp_path / "jaffle_shop"
     shutil.copytree(EXAMPLE, target)
+
     # Wipe any pre-existing generated artifacts so we test a real generation.
     gen = target / "models" / "generated"
     if gen.exists():
         shutil.rmtree(gen)
+
+    # Rewrite packages.yml to point at the absolute on-disk package location.
+    packages_yml = target / "packages.yml"
+    packages_yml.write_text("packages:\n" f"  - local: {DBT_FORGE_PKG}\n")
+
     return target
 
 

@@ -115,7 +115,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["B011"]            # asserts are fine in tests
+# Tests use `pytest.importorskip(...)` followed by imports of the modules
+# whose dependencies were just verified. Some ruff versions special-case
+# this pattern, others don't — we allow E402 globally in tests/ to be safe.
+"tests/**" = ["B011", "E402"]
 
 [tool.ruff.format]
 quote-style = "double"

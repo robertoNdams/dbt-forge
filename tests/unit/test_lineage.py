@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
+pytest.importorskip("pydantic")
+
 from dbt_forge_cli.config import ForgeConfig
 from dbt_forge_cli.lineage import validate_lineage
-
-pytest.importorskip("pydantic")
 
 
 def _cfg(*models):

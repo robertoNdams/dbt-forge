@@ -202,7 +202,7 @@ class ModelConfig(BaseModel):
     def _exactly_one_source(self) -> ModelConfig:
         if (self.source is None) == (self.source_model is None):
             raise ValueError(
-                f"Model '{self.name}' must define exactly one of `source` or `source_model`."
+                f"Model '{self.name}' must define exactly one of " "`source` or `source_model`."
             )
         return self
 
@@ -224,11 +224,11 @@ class ModelConfig(BaseModel):
         for s in self.sort_by:
             if s.metric and s.metric not in known_metrics:
                 raise ValueError(
-                    f"Model '{self.name}': sort_by references unknown metric '{s.metric}'."
+                    f"Model '{self.name}': sort_by references unknown metric " f"'{s.metric}'."
                 )
             if s.column and "*" not in known_columns and s.column not in known_columns:
                 raise ValueError(
-                    f"Model '{self.name}': sort_by references unknown column '{s.column}'."
+                    f"Model '{self.name}': sort_by references unknown column " f"'{s.column}'."
                 )
         return self
 

@@ -43,7 +43,7 @@ def example_dir(tmp_path: Path) -> Path:
 
     # Rewrite packages.yml to point at the absolute on-disk package location.
     packages_yml = target / "packages.yml"
-    packages_yml.write_text("packages:\n" f"  - local: {DBT_FORGE_PKG}\n")
+    packages_yml.write_text(f"packages:\n  - local: {DBT_FORGE_PKG}\n")
 
     return target
 

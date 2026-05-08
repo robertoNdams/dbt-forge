@@ -184,7 +184,7 @@ def generate(
     for p in result.skipped:
         console.print(f"  [yellow]·[/yellow] {p} (exists, skipped)")
     console.print(
-        f"[green]✓[/green] Wrote {len(result.written)} files to " f"[cyan]{output_dir}[/cyan]."
+        f"[green]✓[/green] Wrote {len(result.written)} files to [cyan]{output_dir}[/cyan]."
     )
 
 

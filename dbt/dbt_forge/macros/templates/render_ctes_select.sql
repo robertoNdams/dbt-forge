@@ -41,7 +41,7 @@
     {%- set cte_blocks = [] -%}
     {%- for inc in includes -%}
         {%- set inc_template = inc.get('template', 'base_select') -%}
-        {%- set inc_sql = adapter.dispatch('render_' ~ inc_template, 'dbt_forge')(inc) -%}
+        {%- set inc_sql = dbt_forge.dispatch_template(inc_template, inc) -%}
         {%- set block = inc.name ~ ' as (\n    ' ~ (inc_sql | trim | replace('\n', '\n    ')) ~ '\n)' -%}
         {%- do cte_blocks.append(block) -%}
     {%- endfor -%}
@@ -60,7 +60,7 @@
         {%- endif -%}
     {%- endfor -%}
     {%- do inner_cfg.update({'_local_ctes': cte_names}) -%}
-    {%- set main_sql = adapter.dispatch('render_' ~ parent_template, 'dbt_forge')(inner_cfg) -%}
+    {%- set main_sql = dbt_forge.dispatch_template(parent_template, inner_cfg) -%}
 
 with
 {{ cte_blocks | join(',\n') }}

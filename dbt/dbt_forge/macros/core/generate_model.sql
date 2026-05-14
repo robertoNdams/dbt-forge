@@ -46,7 +46,7 @@
         {%- if model_cfg.get('include_sources') and (model_cfg.get('include_sources', []) | length) > 0 -%}
             {%- set rendered = dbt_forge.render_ctes_select(model_cfg) -%}
         {%- else -%}
-            {%- set rendered = adapter.dispatch('render_' ~ template_name, 'dbt_forge')(model_cfg) -%}
+            {%- set rendered = dbt_forge.dispatch_template(template_name, model_cfg) -%}
         {%- endif -%}
 
         {%- set materialized = model_cfg.get('output_type', 'view') -%}

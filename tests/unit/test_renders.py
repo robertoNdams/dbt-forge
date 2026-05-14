@@ -178,3 +178,75 @@ def test_schema_yml_basic(h):
     assert "- name: stg" in yml
     assert "- not_null" in yml
     assert "- unique" in yml
+
+
+# ---------------------------------------------------------------------------
+# Dispatch contract regression tests
+# ---------------------------------------------------------------------------
+
+
+def test_no_double_default_prefix_in_dispatch_calls():
+    """
+    History: an earlier version of the macros called
+        adapter.dispatch('default__render_X', 'dbt_forge')
+    which dbt resolves as `default__default__render_X` — and fails. This
+    test grep-locks the macros against re-introduction of that pattern.
+    """
+    from pathlib import Path
+
+    macros_root = Path(__file__).resolve().parents[2] / "dbt" / "dbt_forge" / "macros"
+    bad: list[tuple[str, int, str]] = []
+    for path in macros_root.rglob("*.sql"):
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            if "adapter.dispatch('default__" in line or 'adapter.dispatch("default__' in line:
+                bad.append((str(path), lineno, line.strip()))
+    assert not bad, (
+        "adapter.dispatch must be called with the bare macro name "
+        "(e.g. 'render_full_select'), not 'default__render_full_select'. "
+        "Offending lines:\n" + "\n".join(f"  {p}:{n}: {line_text}" for p, n, line_text in bad)
+    )
+
+
+def test_no_dynamic_dispatch_in_macros():
+    """
+    dbt's static parser (statically_parse_adapter_dispatch) expects the first
+    argument to adapter.dispatch(...) to be a string literal. A runtime
+    expression like adapter.dispatch('render_' ~ name, ...) raises:
+
+        AttributeError: 'Concat' object has no attribute 'value'
+
+    at `dbt parse` time. Use `dbt_forge.dispatch_template(name, cfg)` instead,
+    which fans out to literal-string dispatch calls.
+
+    We scan only inside `{% macro %}` bodies — `adapter.dispatch(...)` mentions
+    in doc-comments outside macros are not real calls.
+    """
+    import re
+    from pathlib import Path
+
+    macros_root = Path(__file__).resolve().parents[2] / "dbt" / "dbt_forge" / "macros"
+    macro_open = re.compile(r"\{%-?\s*macro\b")
+    macro_close = re.compile(r"\{%-?\s*endmacro\b")
+
+    bad: list[tuple[str, int, str]] = []
+    for path in macros_root.rglob("*.sql"):
+        inside_macro = False
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            if macro_open.search(line):
+                inside_macro = True
+            if not inside_macro:
+                continue
+            if "adapter.dispatch(" in line:
+                idx = line.index("adapter.dispatch(") + len("adapter.dispatch(")
+                rest = line[idx:].lstrip()
+                if not rest or rest[0] not in ("'", '"'):
+                    bad.append((str(path), lineno, line.strip()))
+            if macro_close.search(line):
+                inside_macro = False
+
+    assert not bad, (
+        "adapter.dispatch() must be called with a literal string as first "
+        "argument (dbt static parser limitation). Use dispatch_template() "
+        "for dynamic dispatch. Offending lines:\n"
+        + "\n".join(f"  {p}:{n}: {line_text}" for p, n, line_text in bad)
+    )

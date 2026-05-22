@@ -18,7 +18,7 @@
 #}
 
 {% macro render_full_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_full_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_full_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

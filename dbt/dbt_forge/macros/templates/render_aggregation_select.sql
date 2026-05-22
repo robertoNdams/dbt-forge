@@ -20,7 +20,7 @@
 #}
 
 {% macro render_aggregation_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_aggregation_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_aggregation_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

@@ -25,7 +25,7 @@
 #}
 
 {% macro render_ctes_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_ctes_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_ctes_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

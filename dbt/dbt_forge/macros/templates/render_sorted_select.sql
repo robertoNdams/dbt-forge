@@ -12,7 +12,7 @@
 #}
 
 {% macro render_sorted_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_sorted_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_sorted_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

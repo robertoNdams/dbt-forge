@@ -10,7 +10,7 @@
 #}
 
 {% macro render_distinct_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_distinct_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_distinct_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

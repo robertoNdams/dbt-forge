@@ -12,7 +12,7 @@
 #}
 
 {% macro render_base_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_base_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_base_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

@@ -20,6 +20,6 @@ models:
     +materialized: view
 
 # Source declarations live in models/sources.yml so dbt's source() resolves.
-seeds:
-  jaffle_shop:
-    +schema: raw
+#:wseedsseeds:
+#  jaffle_shop:
+#    +schema: raw

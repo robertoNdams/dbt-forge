@@ -10,7 +10,7 @@
 #}
 
 {% macro render_thresholds_select(model_cfg) %}
-    {{- adapter.dispatch('default__render_thresholds_select', 'dbt_forge')(model_cfg) -}}
+    {{- adapter.dispatch('render_thresholds_select', 'dbt_forge')(model_cfg) -}}
 {% endmacro %}
 
 

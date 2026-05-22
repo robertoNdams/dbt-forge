@@ -1,0 +1,119 @@
+# dbt-forge configuration for the Jaffle Shop example.
+#
+# Run:
+#   cd examples/jaffle_shop
+#   dbt deps --profiles-dir=.
+#   dbt seed --profiles-dir=.
+#   dbt-forge generate --config config/models.yml --output-dir models/generated --project-dir . --profiles-dir=.
+#   dbt run --profiles-dir=.
+#
+# This file demonstrates the full DSL surface area:
+#   - simple staging (filters only)
+#   - aggregation (metrics + breakdown_by)
+#   - thresholds (HAVING)
+#   - sort_by
+#   - include_sources (CTEs)
+#   - columns_meta + dbt tests
+
+version: 1
+
+models:
+  # 1. Plain staging on top of a raw source ----------------------------------
+  - name: stg_customers
+    description: "Customer dimension, cleaned."
+    source: raw.customers
+    template: full_select
+    select_columns:
+      - id as customer_id
+      - first_name
+      - last_name
+      - email
+    columns_meta:
+      - name: customer_id
+        description: "Primary key."
+        tests: [not_null, unique]
+      - name: email
+        tests: [not_null]
+
+  # 2. Filtered staging on raw orders ----------------------------------------
+  - name: stg_orders
+    description: "Cleaned orders — paid only, from active customers."
+    source: raw.orders
+    template: full_select
+    select_columns:
+      - id as order_id
+      - user_id as customer_id
+      - order_date
+      - amount
+    filters:
+      - column: status
+        op: '!='
+        value: 'cancelled'
+    columns_meta:
+      - name: order_id
+        description: "Primary key."
+        tests: [not_null, unique]
+      - name: customer_id
+        tests: [not_null]
+
+  # 3. Aggregation with HAVING + ORDER BY -----------------------------------
+  - name: fct_revenue_per_customer
+    description: "Total paid revenue per customer, top spenders only."
+    source_model: stg_orders
+    template: full_select
+    select_columns: [customer_id]
+    metrics:
+      - name: total_revenue
+        based_on: amount
+        operation: sum
+      - name: n_orders
+        based_on: order_id
+        operation: count
+    breakdown_by: [customer_id]
+    thresholds:
+      - metric: total_revenue
+        op: '>'
+        value: 100
+    sort_by:
+      - metric: total_revenue
+        order: desc
+    output_type: table
+    columns_meta:
+      - name: customer_id
+        tests: [not_null, unique]
+      - name: total_revenue
+        description: "Sum of order amounts."
+      - name: n_orders
+        description: "Order count."
+
+  # 4. CTE composition: pre-filter inside the same model -------------------
+  #    Demonstrates `include_sources`. The main select reads from the CTE
+  #    `paid_high_value`, which is itself a filtered_select on stg_orders.
+  - name: fct_high_value_revenue
+    description: "Revenue from high-value orders only (>= 50)."
+    source_model: paid_high_value
+    template: full_select
+    select_columns: [customer_id]
+    metrics:
+      - name: hv_revenue
+        based_on: amount
+        operation: sum
+    breakdown_by: [customer_id]
+    sort_by:
+      - metric: hv_revenue
+        order: desc
+    output_type: table
+    include_sources:
+      - name: paid_high_value
+        source_model: stg_orders
+        template: filtered_select
+        select_columns: [customer_id, amount]
+        filters:
+          - column: amount
+            op: '>='
+            value: 50
+    columns_meta:
+      - name: customer_id
+        tests: [not_null]
+      - name: hv_revenue
+        description: "Sum of amounts for orders >= 50."

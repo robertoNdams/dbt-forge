@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a new template, DSL field, or behavior change
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What use case does the current DSL not support, or what makes it awkward today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed YAML
+      description: Show what the YAML would look like with this feature.
+      render: yaml
+
+  - type: textarea
+    id: sql
+    attributes:
+      label: Expected generated SQL
+      description: Show what `.sql` you'd want dbt-forge to emit from the YAML above.
+      render: sql
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

@@ -1,0 +1,11 @@
+# Pass --profiles-dir=. when invoking dbt from this directory, e.g.
+#   dbt deps --profiles-dir=.
+#   dbt seed --profiles-dir=.
+#   dbt run --profiles-dir=.
+jaffle_shop:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: jaffle_shop.duckdb
+      threads: 1

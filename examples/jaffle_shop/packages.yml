@@ -1,0 +1,10 @@
+# In a real project, install dbt-forge from git:
+#
+# packages:
+#   - git: https://github.com/your-org/dbt-forge.git
+#     subdirectory: dbt
+#     revision: v0.1.0
+#
+# Inside this repo we use a local path so the example works without a remote.
+packages:
+  - local: ../../dbt/dbt_forge

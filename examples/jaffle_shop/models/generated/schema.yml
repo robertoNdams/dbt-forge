@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Customer dimension, cleaned.
+    columns:
+      - name: customer_id
+        description: Primary key.
+        tests:
+          - not_null
+          - unique
+      - name: email
+        tests:
+          - not_null
+
+  - name: stg_orders
+    description: Cleaned orders — paid only, from active customers.
+    columns:
+      - name: order_id
+        description: Primary key.
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - not_null
+
+  - name: fct_revenue_per_customer
+    description: Total paid revenue per customer, top spenders only.
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+      - name: total_revenue
+        description: Sum of order amounts.
+      - name: n_orders
+        description: Order count.
+
+  - name: fct_high_value_revenue
+    description: Revenue from high-value orders only (>= 50).
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+      - name: hv_revenue
+        description: Sum of amounts for orders >= 50.

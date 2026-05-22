@@ -33,15 +33,15 @@ dependencies = [
 [project.optional-dependencies]
 # Static analysis & formatting
 lint = [
-    "ruff>=0.6",
-    "mypy>=1.10",
+    "ruff>=0.15.14",
+    "mypy>=2.1.0",
     "types-PyYAML>=6.0",
 ]
 
 # Test runner — `pip install -e ".[test]"`
 test = [
-    "pytest>=8",
-    "pytest-cov>=5",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
     "jinja2>=3.1",          # used by tests/jinja_harness.py
 ]
 
@@ -54,7 +54,7 @@ integration = [
 # Convenience meta-extra for contributors
 dev = [
     "dbt-forge[lint,test,integration]",
-    "pre-commit>=3.7",
+    "pre-commit>=4.6.0",
     "build>=1.2",
 ]
 

@@ -1,0 +1,253 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+    "dbt_version": "1.7.0",
+    "project_name": "audit_test"
+  },
+  "nodes": {
+    "model.audit_test.stg_clean": {
+      "name": "stg_clean",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/staging/stg_clean.sql",
+      "description": "Clean staging model with tests on PK.",
+      "config": {"materialized": "view"},
+      "columns": {
+        "id": {"description": "Primary key"},
+        "value": {"description": "The value"}
+      }
+    },
+    "model.audit_test.stg_no_tests": {
+      "name": "stg_no_tests",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/staging/stg_no_tests.sql",
+      "description": "Has no attached tests at all.",
+      "config": {"materialized": "view"},
+      "columns": {
+        "id": {"description": "PK"}
+      }
+    },
+    "model.audit_test.stg_no_pk_test": {
+      "name": "stg_no_pk_test",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/staging/stg_no_pk_test.sql",
+      "description": "Has tests but not on the PK.",
+      "config": {"materialized": "view"},
+      "columns": {
+        "id": {"description": "PK"},
+        "amount": {"description": "Test on this column instead"}
+      }
+    },
+    "model.audit_test.stg_no_description": {
+      "name": "stg_no_description",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/staging/stg_no_description.sql",
+      "description": "",
+      "config": {"materialized": "view"},
+      "columns": {
+        "id": {"description": "PK"}
+      }
+    },
+    "model.audit_test.stg_undocumented_cols": {
+      "name": "stg_undocumented_cols",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/staging/stg_undocumented_cols.sql",
+      "description": "Has description but columns lack it.",
+      "config": {"materialized": "view"},
+      "columns": {
+        "id": {},
+        "a": {},
+        "b": {"description": "Documented column"}
+      }
+    },
+    "model.audit_test.stg_hot_view": {
+      "name": "stg_hot_view",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/staging/stg_hot_view.sql",
+      "description": "Materialized as view but consumed by many marts.",
+      "config": {"materialized": "view"},
+      "columns": {
+        "id": {"description": "PK"}
+      }
+    },
+    "model.audit_test.fct_mart_1": {
+      "name": "fct_mart_1",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/fct_mart_1.sql",
+      "description": "Downstream consumer 1.",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "model.audit_test.fct_mart_2": {
+      "name": "fct_mart_2",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/fct_mart_2.sql",
+      "description": "Downstream consumer 2.",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "model.audit_test.fct_mart_3": {
+      "name": "fct_mart_3",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/fct_mart_3.sql",
+      "description": "Downstream consumer 3.",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "model.audit_test.fct_mart_4": {
+      "name": "fct_mart_4",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/fct_mart_4.sql",
+      "description": "Downstream consumer 4.",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "model.audit_test.fct_mart_5": {
+      "name": "fct_mart_5",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/fct_mart_5.sql",
+      "description": "Downstream consumer 5 — pushes stg_hot_view past threshold.",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "model.audit_test.dead_model": {
+      "name": "dead_model",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/dead_model.sql",
+      "description": "Nothing consumes me.",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "model.audit_test.exposed_undocumented": {
+      "name": "exposed_undocumented",
+      "resource_type": "model",
+      "package_name": "audit_test",
+      "schema": "main",
+      "original_file_path": "models/marts/exposed_undocumented.sql",
+      "description": "",
+      "config": {"materialized": "table"},
+      "columns": {"id": {"description": "PK"}}
+    },
+    "test.audit_test.unique_stg_clean_id": {
+      "name": "unique_stg_clean_id",
+      "resource_type": "test",
+      "package_name": "audit_test",
+      "schema": "main_dbt_test__audit",
+      "original_file_path": "models/staging/schema.yml"
+    },
+    "test.audit_test.not_null_stg_clean_id": {
+      "name": "not_null_stg_clean_id",
+      "resource_type": "test",
+      "package_name": "audit_test",
+      "schema": "main_dbt_test__audit",
+      "original_file_path": "models/staging/schema.yml"
+    },
+    "test.audit_test.not_null_stg_no_pk_test_amount": {
+      "name": "not_null_stg_no_pk_test_amount",
+      "resource_type": "test",
+      "package_name": "audit_test",
+      "schema": "main_dbt_test__audit",
+      "original_file_path": "models/staging/schema.yml"
+    }
+  },
+  "sources": {
+    "source.audit_test.raw.live_table": {
+      "name": "live_table",
+      "source_name": "raw",
+      "package_name": "audit_test",
+      "schema": "raw",
+      "original_file_path": "models/sources.yml"
+    },
+    "source.audit_test.raw.orphan_table": {
+      "name": "orphan_table",
+      "source_name": "raw",
+      "package_name": "audit_test",
+      "schema": "raw",
+      "original_file_path": "models/sources.yml"
+    }
+  },
+  "exposures": {
+    "exposure.audit_test.dashboard_clean": {
+      "name": "dashboard_clean",
+      "resource_type": "exposure",
+      "package_name": "audit_test",
+      "original_file_path": "models/exposures.yml"
+    }
+  },
+  "parent_map": {
+    "model.audit_test.stg_clean": ["source.audit_test.raw.live_table"],
+    "model.audit_test.stg_no_tests": [],
+    "model.audit_test.stg_no_pk_test": [],
+    "model.audit_test.stg_no_description": [],
+    "model.audit_test.stg_undocumented_cols": [],
+    "model.audit_test.stg_hot_view": [],
+    "model.audit_test.fct_mart_1": ["model.audit_test.stg_hot_view"],
+    "model.audit_test.fct_mart_2": ["model.audit_test.stg_hot_view"],
+    "model.audit_test.fct_mart_3": ["model.audit_test.stg_hot_view"],
+    "model.audit_test.fct_mart_4": ["model.audit_test.stg_hot_view"],
+    "model.audit_test.fct_mart_5": ["model.audit_test.stg_hot_view"],
+    "model.audit_test.dead_model": [],
+    "model.audit_test.exposed_undocumented": [],
+    "test.audit_test.unique_stg_clean_id": ["model.audit_test.stg_clean"],
+    "test.audit_test.not_null_stg_clean_id": ["model.audit_test.stg_clean"],
+    "test.audit_test.not_null_stg_no_pk_test_amount": ["model.audit_test.stg_no_pk_test"],
+    "exposure.audit_test.dashboard_clean": [
+      "model.audit_test.stg_clean",
+      "model.audit_test.exposed_undocumented"
+    ]
+  },
+  "child_map": {
+    "source.audit_test.raw.live_table": ["model.audit_test.stg_clean"],
+    "source.audit_test.raw.orphan_table": [],
+    "model.audit_test.stg_clean": [
+      "test.audit_test.unique_stg_clean_id",
+      "test.audit_test.not_null_stg_clean_id",
+      "exposure.audit_test.dashboard_clean"
+    ],
+    "model.audit_test.stg_no_tests": [],
+    "model.audit_test.stg_no_pk_test": [
+      "test.audit_test.not_null_stg_no_pk_test_amount"
+    ],
+    "model.audit_test.stg_no_description": [],
+    "model.audit_test.stg_undocumented_cols": [],
+    "model.audit_test.stg_hot_view": [
+      "model.audit_test.fct_mart_1",
+      "model.audit_test.fct_mart_2",
+      "model.audit_test.fct_mart_3",
+      "model.audit_test.fct_mart_4",
+      "model.audit_test.fct_mart_5"
+    ],
+    "model.audit_test.fct_mart_1": [],
+    "model.audit_test.fct_mart_2": [],
+    "model.audit_test.fct_mart_3": [],
+    "model.audit_test.fct_mart_4": [],
+    "model.audit_test.fct_mart_5": [],
+    "model.audit_test.dead_model": [],
+    "model.audit_test.exposed_undocumented": [
+      "exposure.audit_test.dashboard_clean"
+    ]
+  }
+}

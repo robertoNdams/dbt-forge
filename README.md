@@ -1,75 +1,37 @@
 # dbt-forge
 
-> **Config-driven dbt model generator** — composable, testable, dbt-native, future-proof.
+**A CI-first quality CLI for dbt.** Inspect lineage, gate PRs on risk, audit technical debt, and generate boilerplate models — all from a single command-line tool. Works on any dbt project. No lock-in.
 
-[![CI](https://github.com/robertoNdams/dbt-forge/actions/workflows/ci.yml/badge.svg)](https://github.com/robertoNdams/dbt-forge/actions/workflows/ci.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![dbt 1.7+](https://img.shields.io/badge/dbt-1.7%2B-orange)](https://github.com/dbt-labs/dbt-core)
-
-`dbt-forge` lets you describe dbt models as **intent** in YAML rather than writing SQL. A Python CLI validates your config and delegates to a dbt package made entirely of macros, which compose templates via `adapter.dispatch` to emit `.sql` files plus a matching `schema.yml`.
-
-```text
-config.yml  ──▶  CLI (Pydantic validation + lineage check)
-                       │
-                       ▼
-              dbt run-operation generate_model
-                       │
-                       ▼
-              dbt_forge macros (dispatch + compose)
-                       │
-                       ▼
-              models/*.sql  +  models/schema.yml
-```
+[![CI](https://img.shields.io/github/actions/workflow/status/robertoNdams/dbt-forge/ci.yml?branch=dev)](https://github.com/robertoNdams/dbt-forge/actions)
+[![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
+[![dbt](https://img.shields.io/badge/dbt-1.7+-orange.svg)](https://getdbt.com)
 
 ---
 
-## Why
+## Why dbt-forge?
 
-Writing SQL by hand for hundreds of staging / mart models is repetitive. Existing dbt code-generators produce flat scaffolds; they don't compose. `dbt-forge` is built around three principles:
+dbt gives you SQL, tests, version control. But three problems persist across every project:
 
-1. **Composition over templating** — every template is a macro that can call another macro. No `{% include %}`, no string concatenation in Python.
-2. **dbt-native lineage** — the generator emits `ref()` and `source()` calls. Generated models participate fully in the dbt DAG.
-3. **Override-friendly** — any project consuming `dbt_forge` can redefine `render_<template>` locally and it wins via `adapter.dispatch`.
+- **Boilerplate** — 50-80% of staging models are near-identical `SELECT … WHERE … cast` blocks that get copy-pasted by hand.
+- **Silent risk** — a change to a staging model can break a dashboard three hops downstream. Nothing warns you before production.
+- **Invisible debt** — untested models, undocumented sources, dead code accumulate over time and no one has a full picture.
 
----
-
-## Repository layout
-
-```
-dbt-forge/
-├── README.md
-├── pyproject.toml                    # Python CLI package
-├── src/dbt_forge_cli/                # Python: validation + orchestration only
-│   ├── cli.py                        # `dbt-forge` entrypoint
-│   ├── config.py                     # Pydantic schemas
-│   ├── lineage.py                    # DAG validation (cycles, missing refs)
-│   ├── runner.py                     # invokes `dbt run-operation`
-│   └── validators/business_rules.py
-├── dbt/dbt_forge/                    # dbt package — installable via packages.yml
-│   ├── dbt_project.yml
-│   └── macros/
-│       ├── core/                     # generate_model, resolve_source, etc.
-│       ├── templates/                # all 8 render_* templates
-│       └── utils/                    # format_columns, format_filters, ...
-├── examples/jaffle_shop/             # End-to-end working example (DuckDB)
-├── tests/{unit,integration,fixtures}
-└── docs/{DSL.md, TEMPLATES.md, EXTENDING.md}
-```
+dbt-forge is the CLI that fixes all three, without asking you to migrate anything.
 
 ---
 
-## Installation
+## Install
 
-### 1. Install the CLI
+1. Install the CLI 
 
 ```bash
-uv pip install git+https://github.com/your-org/dbt-forge.git
-# or, locally from the repo root:
-uv pip install -e .
+uv pip install git+https://github.com/your-org/dbt-forge.git 
+# Or, locally from the repo root: 
+uv pip install -e . 
 ```
 
-### 2. Add the dbt package to your project
+2. Add the dbt package to your project 
 
 `packages.yml`:
 
@@ -83,366 +45,260 @@ packages:
 dbt deps
 ```
 
+Requires Python 3.10+ and dbt-core 1.7+ (works with any adapter: DuckDB, Snowflake, BigQuery, Postgres, Redshift…).
+
 ---
 
-## Quickstart
+## The 5 commands at a glance
+
+| Command | What it does | Full docs |
+|---|---|---|
+| `dbt-forge lineage <model>` | Show upstream/downstream dependencies as ASCII or Mermaid | [docs/LINEAGE.md](docs/LINEAGE.md) |
+| `dbt-forge impact <model>` | Quantify the downstream risk of a change, gate CI with `--fail-on` | [docs/IMPACT.md](docs/IMPACT.md) |
+| `dbt-forge audit` | Static linter for tests, documentation, structure (8 rules) | [docs/AUDIT.md](docs/AUDIT.md) |
+| `dbt-forge generate` | YAML → SQL + schema.yml, composable templates, override per adapter | [docs/DSL.md](docs/DSL.md) · [docs/TEMPLATES.md](docs/TEMPLATES.md) · [docs/EXTENDING.md](docs/EXTENDING.md) |
+| `dbt-forge validate` | Validate a `generate` config without invoking dbt | See DSL.md |
+
+---
+
+## `dbt-forge lineage` — see the DAG in your terminal
+
+**The 30-second first use.** Point it at any dbt project (yours, or a fork you're exploring) and see who depends on what:
+
+```bash
+$ dbt-forge lineage fct_revenue_per_customer --show-config
+
+fct_revenue_per_customer  [models/marts/fct_revenue_per_customer.sql]
+├── upstream
+│   └── stg_orders  [models/staging/stg_orders.sql]
+│       └── source: raw.orders  [models/sources.yml]
+└── downstream
+    ├── rpt_top_customers  [models/marts/rpt_top_customers.sql]
+    │   └── exposure: executive_dashboard
+    └── fct_high_value_revenue  [models/marts/fct_high_value_revenue.sql]
+```
+
+No server, no build, no browser. Runs in ~200ms. Also emits **Mermaid** for pasting in PR descriptions or Notion:
+
+```bash
+dbt-forge lineage fct_revenue_per_customer --format mermaid
+```
+
+**Options**: `--upstream/--no-upstream`, `--downstream/--no-downstream`, `--depth N`, `--show-config`, `--format ascii|mermaid`. Full reference: [docs/LINEAGE.md](docs/LINEAGE.md).
+
+---
+
+## `dbt-forge impact` — turn CI into a quality gate
+
+You're modifying `stg_orders`. Before you merge, what do you risk breaking?
+
+```bash
+$ dbt-forge impact stg_orders
+
+Modifying stg_orders would affect 3 downstream nodes:
+
+  IMMEDIATE (1 hop)
+    ✓ fct_revenue_per_customer  [tests: 3]  [exposures: 1: executive_dashboard]
+    ⚠ fct_high_value_revenue    [tests: 1]  [exposures: 0]  (no pk test)
+
+  DOWNSTREAM (2+ hops)
+    ✗ rpt_top_customers         [tests: 0]  [exposures: 1: executive_dashboard]
+                                             (no tests; 1 exposure downstream)
+
+  Risk surface: 1 critical, 1 warning
+```
+
+The **`--fail-on critical`** flag turns this into a hard CI gate:
+
+```yaml
+# .github/workflows/dbt-impact.yml
+- run: |
+    for f in $(git diff --name-only origin/main HEAD | grep '\.sql$'); do
+      dbt-forge impact "$(basename "$f" .sql)" --fail-on critical || exit 1
+    done
+```
+
+Blocks any merge that would leave an untested model feeding a dashboard — without running the models. Zero warehouse compute cost, runs in seconds, replaces expensive alternatives that do data-diff on every PR.
+
+**JSON output** for orchestration:
+
+```bash
+dbt-forge impact stg_orders --format json | jq '.summary'
+# { "without_tests": 1, "exposures_affected": 1, "by_level": {...} }
+```
+
+Full reference: [docs/IMPACT.md](docs/IMPACT.md).
+
+---
+
+## `dbt-forge audit` — measure technical debt
+
+Run periodically to see the full health of your project:
+
+```bash
+$ dbt-forge audit
+
+Scanned 47 models, ran 8 rules: AUDIT001..AUDIT008
+
+CRITICAL  (3)
+  AUDIT002  Model 'fct_revenue' has tests but none on its primary key 'order_id'
+           → Add unique + not_null test on 'order_id' in models/marts/schema.yml
+
+WARNING   (12)
+  AUDIT001  Model 'stg_events' has no tests defined
+  AUDIT005  Source 'raw.archived_orders' is declared but never referenced
+  AUDIT006  Model 'stg_users' is a view consumed by 5 downstream models — every query re-executes its SQL
+  ...
+
+INFO      (24)
+  AUDIT003  Model 'fct_internal_metrics' has no description
+  AUDIT007  Model 'legacy_pipeline' is never referenced and feeds no exposure
+  ...
+
+Summary: 39 findings across 28 nodes (3 critical, 12 warning, 24 info)
+```
+
+**8 rules** across three categories:
+
+| Category | Rules |
+|---|---|
+| Tests & coverage | AUDIT001 (no tests), AUDIT002 (no PK test) |
+| Documentation | AUDIT003 (no model description), AUDIT004 (no column descriptions) |
+| Structure | AUDIT005 (orphan source), AUDIT006 (hot view), AUDIT007 (dead model), AUDIT008 (undocumented exposure deps) |
+
+Every finding comes with an actionable suggestion. Also works as a CI gate:
+
+```bash
+dbt-forge audit --fail-on critical
+```
+
+Full reference: [docs/AUDIT.md](docs/AUDIT.md).
+
+---
+
+## `dbt-forge generate` — write models in YAML, get dbt-native SQL
+
+For teams that want to eliminate staging boilerplate. Write your model as YAML:
 
 ```yaml
 # config/models.yml
 models:
-  - name: stg_orders
-    description: "Cleaned orders staging."
-    source: raw.orders
-    template: full_select
-    select_columns: ['*']
-    filters:
-      - column: status
-        op: '!='
-        value: 'cancelled'
-    columns_meta:
-      - name: order_id
-        description: "Primary key."
-        tests: [not_null, unique]
-
   - name: fct_revenue_per_customer
-    description: "Total revenue per customer above threshold."
     source_model: stg_orders
     template: full_select
     select_columns: [customer_id]
     metrics:
-      - name: total_revenue
-        based_on: amount
-        operation: sum
+      - {name: total_revenue, based_on: amount, operation: sum}
     breakdown_by: [customer_id]
     thresholds:
-      - metric: total_revenue
-        op: '>'
-        value: 100
+      - {metric: total_revenue, op: '>', value: 100}
     sort_by:
-      - metric: total_revenue
-        order: desc
+      - {metric: total_revenue, order: desc}
+    columns_meta:
+      - {name: customer_id, tests: [not_null, unique]}
+      - {name: total_revenue, description: "Sum of paid orders"}
 ```
+
+Get dbt-native SQL and schema.yml, ready to `dbt run`:
 
 ```bash
-dbt-forge generate --config config/models.yml --output-dir models/generated
-dbt run
+$ dbt-forge generate --config config/models.yml --output-dir models/generated
+
+  + models/generated/fct_revenue_per_customer.sql
+  + models/generated/schema.yml
+✓ Wrote 2 files to models/generated
 ```
 
-The generator emits `models/generated/stg_orders.sql`, `models/generated/fct_revenue_per_customer.sql`, and a single `models/generated/schema.yml`.
+**8 composable templates**, override-friendly per project or per adapter (Snowflake / BigQuery / DuckDB / Postgres). Pydantic-validated before invocation, DAG cycles caught before `dbt parse`. Not a scaffolder — a proper composition system.
+
+See:
+- [docs/DSL.md](docs/DSL.md) — the YAML DSL reference
+- [docs/TEMPLATES.md](docs/TEMPLATES.md) — the 8 templates and how they compose
+- [docs/EXTENDING.md](docs/EXTENDING.md) — writing your own templates or overriding defaults
 
 ---
 
-## Running the example end-to-end
+## How dbt-forge fits in the 2026 dbt landscape
 
-The repo ships a complete DuckDB example under [`examples/jaffle_shop/`](examples/jaffle_shop/) that exercises every feature of the DSL. The walk-through below shows the three phases in order — **validation**, **lineage**, **generation** — followed by the dbt build.
+| Capability | dbt Core v2 | dbt Fusion | dbt Cloud | Recce/Datafold | **dbt-forge** |
+|---|:---:|:---:|:---:|:---:|:---:|
+| CLI, scriptable, single binary | partial | partial (IDE) | no | partial | **yes** |
+| Lineage table-level | via dbt docs | yes | yes | yes | **yes** |
+| Lineage column-level | no | yes | yes | yes | roadmap |
+| Impact analysis (risk-based) | no | technical only | yes | data-diff only | **yes** |
+| CI gate `--fail-on` with JSON | no | no | partial | partial | **yes** |
+| YAML-native model generation | no (codegen only) | no | no | no | **yes** |
+| Static audit / debt scoring | no | no | no | no | **yes** |
+| Licence | Apache 2.0 | ELv2 + proprietary | proprietary | mixed | **Apache 2.0** |
 
-### Prerequisites
+**dbt-forge is complementary to dbt Fusion and dbt Cloud, not competing.** Use them alongside — dbt-forge fills the CI-first, open-source gap they leave.
+
+---
+
+## Quickstart on your existing project
+
+Assumes you already have a dbt project with a working profile.
 
 ```bash
-# From the repo root
-uv pip install -e .            # installs the dbt-forge CLI
-uv pip install dbt-duckdb      # adapter the example uses
+# 1. Install
+pip install dbt-forge
+
+# 2. Ensure a manifest exists (or let dbt-forge run `dbt parse` for you)
+dbt parse
+
+# 3. Explore
+dbt-forge lineage stg_orders
+dbt-forge impact stg_orders
+dbt-forge audit
+
+# 4. When ready, wire the impact gate into CI
+# See docs/IMPACT.md for a full GitHub Actions example.
+```
+
+No YAML to write, no models to rewrite. Every command works on the manifest dbt already generates.
+
+---
+
+## Try the example
+
+The repo ships a full example project (DuckDB, jaffle-shop-inspired) you can run end-to-end:
+
+```bash
+git clone https://github.com/robertoNdams/dbt-forge && cd dbt-forge
+uv pip install -e ".[test]"
 cd examples/jaffle_shop
-dbt deps --profiles-dir=.      # pulls in the dbt_forge package (local path)
-dbt seed --profiles-dir=.      # loads customers.csv + orders.csv into raw.*
-```
-
-The example config is `config/models.yml` — four models covering staging, aggregation, HAVING/ORDER BY, and a CTE composition.
-
-### Phase 1 — Validation only (no dbt invocation)
-
-`dbt-forge validate` runs Pydantic schema checks plus business rules and exits without writing anything. Useful in CI on every PR.
-
-```bash
-dbt-forge validate --config config/models.yml
-```
-
-Expected output:
-
-```
-✓ 4 models valid · build order: stg_customers → stg_orders → fct_revenue_per_customer → fct_high_value_revenue
-```
-
-To see what failure looks like, edit `config/models.yml` and break something — say, change a threshold's `metric` to `ghost`:
-
-```yaml
-thresholds:
-  - metric: ghost           # ← unknown metric
-    op: '>'
-    value: 100
-```
-
-Re-run the same command:
-
-```
-┃ Configuration errors                               ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ models.2                 │ Model 'fct_revenue_per_customer': threshold
-│                          │ references unknown metric 'ghost'. Known
-│                          │ metrics: ['n_orders', 'total_revenue'].
-└──────────────────────────┴─────────────────────────┘
-```
-
-The CLI exits with code `1` and points to the YAML path. Revert the change to continue.
-
-### Phase 2 — Lineage (DAG check)
-
-Lineage validation runs as part of `validate`/`generate`, but you can see what it computed in the success line above (`build order: A → B → C → D`). To prove the cycle detector works, add a fake cycle to the config:
-
-```yaml
-- name: stg_customers
-  source_model: fct_high_value_revenue   # introduce a cycle
-  ...
-```
-
-```
-╭─────────────────────────────────╮
-│ Lineage validation failed       │
-╰─────────────────────────────────╯
-  • CYCLE: Cycle detected: stg_customers -> fct_high_value_revenue -> stg_orders -> stg_customers
-```
-
-External references (a `source_model` that isn't in the config) are **not** an error — they're delegated to dbt's own resolver and reported as informational:
-
-```
-External refs (delegated to dbt): some_external_model
-✓ 4 models valid · build order: …
-```
-
-### Phase 3 — Generation (dry-run first, then write)
-
-`--dry-run` prints the rendered SQL to stdout without touching the filesystem:
-
-```bash
-dbt-forge generate \
-  --config config/models.yml \
-  --output-dir models/generated \
-  --project-dir . \
-  --profiles-dir=. \
-  --dry-run
-```
-
-Excerpt of what you'll see:
-
-```sql
-─── models/generated/fct_revenue_per_customer.sql ───
-{{ config(materialized='table') }}
-
-select
-    customer_id,
-    sum(amount) as total_revenue,
-    count(order_id) as n_orders
-from {{ ref('stg_orders') }}
-group by customer_id
-having total_revenue > 100
-order by
-    total_revenue desc
-
-─── models/generated/fct_high_value_revenue.sql ───
-{{ config(materialized='table') }}
-
-with
-paid_high_value as (
-    select
-        customer_id,
-        amount
-    from {{ ref('stg_orders') }}
-    where amount >= 50
-)
-
-select
-    customer_id,
-    sum(amount) as hv_revenue
-from paid_high_value
-group by customer_id
-order by
-    hv_revenue desc
-```
-
-When the output looks right, drop `--dry-run` and add `--overwrite` to persist:
-
-```bash
-dbt-forge generate \
-  --config config/models.yml \
-  --output-dir models/generated \
-  --project-dir . \
-  --profiles-dir=. \
-  --overwrite
-```
-
-```
-✓ 4 models valid · build order: stg_customers → stg_orders → fct_revenue_per_customer → fct_high_value_revenue
-  + examples/jaffle_shop/models/generated/stg_customers.sql
-  + examples/jaffle_shop/models/generated/stg_orders.sql
-  + examples/jaffle_shop/models/generated/fct_revenue_per_customer.sql
-  + examples/jaffle_shop/models/generated/fct_high_value_revenue.sql
-  + examples/jaffle_shop/models/generated/schema.yml
-✓ Wrote 5 files to models/generated.
-```
-
-### Phase 4 — Build with dbt
-
-The generated files are normal dbt models — `dbt run` and `dbt test` work without any further configuration:
-
-```bash
+dbt deps --profiles-dir=.
+dbt seed --profiles-dir=.
+dbt-forge generate --config config/models.yml --output-dir models/generated --project-dir . --profiles-dir=.
 dbt run --profiles-dir=.
-dbt test --profiles-dir=.
-```
-
-```
-Running with dbt=1.8.x
-Found 4 models, 6 data tests, 2 sources, …
-
-1 of 4 OK created sql view model main.stg_customers …………………… [OK in 0.07s]
-2 of 4 OK created sql view model main.stg_orders ……………………… [OK in 0.06s]
-3 of 4 OK created sql table model main.fct_revenue_per_customer  [OK in 0.09s]
-4 of 4 OK created sql table model main.fct_high_value_revenue …  [OK in 0.08s]
-
-Completed successfully
-```
-
-Inspect the warehouse:
-
-```bash
-duckdb jaffle_shop.duckdb -c "select * from main.fct_revenue_per_customer order by total_revenue desc;"
-```
-
-```
-┌─────────────┬───────────────┬──────────┐
-│ customer_id │ total_revenue │ n_orders │
-├─────────────┼───────────────┼──────────┤
-│      3      │     305.75    │     3    │
-│      1      │     319.75    │     4    │
-│      4      │     248.40    │     2    │
-│      5      │     289.90    │     3    │
-└─────────────┴───────────────┴──────────┘
-```
-
-### Iterating
-
-Edit `config/models.yml`, re-run `dbt-forge generate --overwrite`, then `dbt run`. Validation + lineage are checked on every invocation, so a bad edit fails fast with a precise error rather than producing a broken `.sql`.
-
----
-
-## DSL reference
-
-| YAML key         | SQL equivalent      |
-| ---------------- | ------------------- |
-| `select_columns` | `SELECT`            |
-| `filters`        | `WHERE`             |
-| `metrics`        | aggregations        |
-| `breakdown_by`   | `GROUP BY`          |
-| `thresholds`     | `HAVING`            |
-| `sort_by`        | `ORDER BY`          |
-
-See [docs/DSL.md](docs/DSL.md) for the full spec.
-
----
-
-## Templates & composition
-
-Templates are pure macros named `render_<name>` in the `dbt_forge` namespace. They compose:
-
-```
-full_select
-└── thresholds_select
-    └── aggregation_select
-        └── filtered_select
-            └── distinct_select
-                └── base_select
-```
-
-`render_ctes_select` wraps any of the above when `include_sources` is set.
-
-To **override** a template, define a macro of the same name in your project — `adapter.dispatch` will pick it up automatically. See [docs/EXTENDING.md](docs/EXTENDING.md).
-
----
-
-## CLI
-
-```text
-dbt-forge generate --config <path> --output-dir <dir> [options]
-
-Options:
-  --dry-run         Print rendered SQL without writing files
-  --overwrite       Allow overwriting existing files
-  --validate-only   Validate config + lineage and exit
-  --project-dir     dbt project directory (default: .)
-  --profiles-dir    dbt profiles directory
+dbt-forge lineage fct_revenue_per_customer --project-dir . --profiles-dir=.
+dbt-forge impact stg_orders --project-dir . --profiles-dir=.
+dbt-forge audit --project-dir . --profiles-dir=.
 ```
 
 ---
 
-## Constraints (by design)
+## Documentation
 
-| ❌ Forbidden                              | ✅ Required                          |
-| ----------------------------------------- | ------------------------------------ |
-| `{% include %}`                           | macros only                          |
-| File reads inside macros                  | `adapter.dispatch`                   |
-| Business logic in Python (beyond config)  | `ref()` / `source()` for all sources |
-| Hard-coded table names                    | clean CLI ⇄ dbt separation           |
+Deep-dive references live in [`docs/`](docs/):
+
+- **[LINEAGE.md](docs/LINEAGE.md)** — full options and Mermaid output reference for `dbt-forge lineage`
+- **[IMPACT.md](docs/IMPACT.md)** — risk classification rules, JSON schema, CI integration recipes
+- **[AUDIT.md](docs/AUDIT.md)** — 8 audit rules explained, workflows, tool comparison
+- **[DSL.md](docs/DSL.md)** — the YAML config language for `dbt-forge generate`
+- **[TEMPLATES.md](docs/TEMPLATES.md)** — the 8 built-in SQL templates and how they compose
+- **[EXTENDING.md](docs/EXTENDING.md)** — how to write custom templates or override defaults for your adapter
 
 ---
 
-## Development
+## Contributing
 
-### Setup
+PRs welcome. See the [test suite](tests/) for how things are structured — every command has its own sub-package under `src/dbt_forge_cli/` (e.g. `lineage_cli/`, `audit_cli/`) with isolated tests. New rules for `audit` are especially easy to add: subclass `AuditRule`, register it in the engine, done. See [docs/AUDIT.md](docs/AUDIT.md) section "Adding new rules".
 
-```bash
-git clone https://github.com/robertoNdams/dbt-forge.git
-cd dbt-forge
-uv pip install -e ".[dev]"        # CLI + lint + test + integration extras
-pre-commit install                # ruff format/lint + mypy + hygiene on every commit
-```
-
-### Running tests
-
-| Command                                          | Scope                                       |
-| ------------------------------------------------ | ------------------------------------------- |
-| `pytest tests/unit`                              | Pydantic schema, lineage, render, parser    |
-| `pytest tests/integration -m integration`        | Real dbt-duckdb run on the example project  |
-| `pytest --cov=dbt_forge_cli`                     | All tests with coverage report              |
-| `python tests/render_smoke.py`                   | Standalone macro smoke (no pytest needed)   |
-
-The unit tests use a self-contained Jinja2 harness (`tests/jinja_harness.py`) that emulates dbt's `adapter.dispatch` — so no warehouse or dbt install is required. Integration tests are gated behind the `integration` marker and require `dbt-duckdb` (installed via the `[integration]` extra).
-
-### Linting & type checking
-
-```bash
-ruff check src tests       # lint
-ruff format src tests      # format (writes)
-ruff format --check src tests  # format (CI mode, no writes)
-mypy                       # configured to type-check src/dbt_forge_cli strictly
-```
-
-### CI/CD
-
-Every push and PR to `main` or `dev` runs the full pipeline:
-
-1. **Lint & type check** — ruff (lint + format) and mypy strict on the package
-2. **Unit tests** — matrix across Python 3.10, 3.11, 3.12 with coverage uploaded as an artifact
-3. **Integration** — installs `dbt-duckdb`, generates the example, runs `dbt run` + `dbt test`, asserts warehouse contents
-4. **Build** — `python -m build` produces a wheel and sdist, both stored as artifacts
-
-Workflows: [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
-
-### Releases
-
-Tag a commit with `vX.Y.Z` (matching `pyproject.toml`'s `project.version`) and push:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-The [`release.yml`](.github/workflows/release.yml) workflow verifies the version match, builds the distributions, extracts the latest section from `CHANGELOG.md`, and creates a GitHub Release with the wheel and sdist attached.
-
-### Dependency updates
-
-Dependabot is configured in [`.github/dependabot.yml`](.github/dependabot.yml) with weekly grouped PRs for Python deps and GitHub Actions versions.
+For issues or feature requests, open a GitHub issue.
 
 ---
 
 ## License
 
-MIT.
+Apache 2.0. See [LICENSE](LICENSE).

@@ -1,6 +1,7 @@
 """
 Tests for the audit renderers (ASCII + JSON).
 """
+
 from __future__ import annotations
 
 import json
@@ -66,6 +67,7 @@ def test_ascii_includes_summary(report, console):
 
 def test_ascii_empty_report(console):
     from dbt_forge_cli.audit_cli.engine import AuditReport
+
     empty = AuditReport(rules_run=["AUDIT001"], total_models_scanned=3)
     render_audit_ascii(console, empty)
     out = console.export_text()

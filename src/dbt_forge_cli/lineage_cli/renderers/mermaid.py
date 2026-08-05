@@ -26,9 +26,9 @@ def _mermaid_id(unique_id: str) -> str:
 
 def _mermaid_shape(node: ManifestNode, label: str) -> str:
     """Pick a Mermaid shape based on resource type:
-      - source:   cylinder    `id[("...")]`
-      - exposure: hexagon-ish `id{{"..."}}`
-      - default:  rectangle   `id["..."]`
+    - source:   cylinder    `id[("...")]`
+    - exposure: hexagon-ish `id{{"..."}}`
+    - default:  rectangle   `id["..."]`
     """
     if node.resource_type == "source":
         return f'{_mermaid_id(node.unique_id)}[("{label}")]'

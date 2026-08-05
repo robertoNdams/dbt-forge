@@ -6,9 +6,10 @@ GitHub Action annotations, etc.
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from ..engine import AuditReport
-from ..rules.base import Finding, Severity
+from ..rules.base import Finding
 
 
 def render_audit_json(report: AuditReport) -> str:
@@ -20,19 +21,15 @@ def render_audit_json(report: AuditReport) -> str:
         "findings_count": len(report.findings),
         "findings": [_finding_payload(f) for f in report.findings],
         "summary": {
-            "by_severity": {
-                sev.value: len(items) for sev, items in by_sev.items()
-            },
+            "by_severity": {sev.value: len(items) for sev, items in by_sev.items()},
             "models_affected": len({f.node.unique_id for f in report.findings}),
-            "max_severity": (
-                report.max_severity.value if report.max_severity else None
-            ),
+            "max_severity": (report.max_severity.value if report.max_severity else None),
         },
     }
     return json.dumps(payload, indent=2) + "\n"
 
 
-def _finding_payload(f: Finding) -> dict:
+def _finding_payload(f: Finding) -> dict[str, Any]:
     return {
         "rule": f.rule_code,
         "severity": f.severity.value,

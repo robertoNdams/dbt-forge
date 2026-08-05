@@ -1,4 +1,5 @@
 """Tests for ASCII, Mermaid, and JSON renderers."""
+
 from __future__ import annotations
 
 import json
@@ -101,9 +102,7 @@ def test_lineage_mermaid_basic(loader):
     root = loader.resolve("fct_revenue_per_customer")
     up = traverse_upstream(loader, root.unique_id)
     down = traverse_downstream(loader, root.unique_id)
-    out = render_lineage_mermaid(
-        root_node=root, upstream=up, downstream=down, loader=loader
-    )
+    out = render_lineage_mermaid(root_node=root, upstream=up, downstream=down, loader=loader)
     assert out.startswith("graph LR\n")
     assert "fct_revenue_per_customer" in out
     assert "stg_orders" in out
@@ -114,9 +113,7 @@ def test_lineage_mermaid_basic(loader):
 def test_lineage_mermaid_source_shape(loader):
     root = loader.resolve("stg_orders")
     up = traverse_upstream(loader, root.unique_id)
-    out = render_lineage_mermaid(
-        root_node=root, upstream=up, downstream=None, loader=loader
-    )
+    out = render_lineage_mermaid(root_node=root, upstream=up, downstream=None, loader=loader)
     # source uses cylinder shape `[("...")]`
     assert '[("source: raw.orders")]' in out
 
@@ -177,7 +174,11 @@ def test_impact_ascii_shows_critical_node(loader, console):
     out = console.export_text()
     # Critical icon "✗" should appear next to rpt_top_customers
     # We can't easily test rich coloring in plain output, but the icon is text
-    rpt_line = [l for l in out.splitlines() if "rpt_top_customers" in l][0]
+    rpt_line = next(
+        (line for line in out.splitlines() if "rpt_top_customers" in line),
+        None,
+    )
+    assert rpt_line is not None
     assert "✗" in rpt_line
 
 

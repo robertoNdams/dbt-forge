@@ -1,13 +1,14 @@
 """
 Tests for AuditEngine: rule selection, severity threshold, fail-on semantics.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import pytest
 
-from dbt_forge_cli.audit_cli.engine import AuditEngine, AuditReport
+from dbt_forge_cli.audit_cli.engine import AuditEngine
 from dbt_forge_cli.audit_cli.rules.base import Severity
 from dbt_forge_cli.lineage_cli.manifest import ManifestLoader
 

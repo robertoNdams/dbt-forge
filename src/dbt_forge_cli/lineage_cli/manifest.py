@@ -63,7 +63,7 @@ class ManifestNode:
     unique_id: str
     name: str
     resource_type: str  # model | source | seed | snapshot | test | exposure
-    file_path: str      # original_file_path — relative to the dbt project root
+    file_path: str  # original_file_path — relative to the dbt project root
     schema: str | None  # database schema; None for tests and exposures
     package_name: str
 
@@ -137,8 +137,7 @@ class ManifestLoader:
             _run_dbt_parse(project_dir, profiles_dir)
             if not manifest_path.exists():
                 raise ManifestError(
-                    f"`dbt parse` ran but did not produce {manifest_path}. "
-                    "Check the dbt logs."
+                    f"`dbt parse` ran but did not produce {manifest_path}. Check the dbt logs."
                 )
 
         return cls.from_path(manifest_path)

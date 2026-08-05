@@ -16,6 +16,7 @@ Both `lineage` and `impact` consume this structure; the renderers do the rest.
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 
 from .manifest import ManifestLoader
@@ -82,8 +83,8 @@ def _bfs(
     *,
     loader: ManifestLoader,
     root: str,
-    neighbours,
-    edge_factory,
+    neighbours: Callable[[str], Iterable[str]],
+    edge_factory: Callable[[str, str], tuple[str, str]],
     max_depth: int | None,
     excluded_types: frozenset[str],
     direction: str,

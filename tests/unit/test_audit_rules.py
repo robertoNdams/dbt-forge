@@ -1,6 +1,7 @@
 """
 Tests for each audit rule against the fixture manifest.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

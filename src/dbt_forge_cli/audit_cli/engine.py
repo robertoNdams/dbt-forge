@@ -5,6 +5,7 @@ Audit engine: runs the enabled rules against a manifest and aggregates findings.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from ..lineage_cli.manifest import ManifestLoader
 from .rules import (
@@ -56,7 +57,7 @@ class AuditEngine:
         report = engine.run(loader)
     """
 
-    DEFAULT_RULES: list[type[AuditRule]] = [
+    DEFAULT_RULES: ClassVar[list[type[AuditRule]]] = [
         ModelWithoutTests,
         MissingPrimaryKeyTest,
         MissingModelDescription,
@@ -93,9 +94,7 @@ class AuditEngine:
         report = AuditReport()
         report.rules_run = [r.code for r in self._rules]
         report.total_models_scanned = sum(
-            1
-            for n in loader.all_nodes().values()
-            if n.resource_type == "model"
+            1 for n in loader.all_nodes().values() if n.resource_type == "model"
         )
 
         for rule in self._rules:
@@ -104,7 +103,5 @@ class AuditEngine:
                     report.findings.append(finding)
 
         # Stable ordering: severity (worst first), then rule code, then node name
-        report.findings.sort(
-            key=lambda f: (-f.severity.severity, f.rule_code, f.node.name)
-        )
+        report.findings.sort(key=lambda f: (-f.severity.severity, f.rule_code, f.node.name))
         return report

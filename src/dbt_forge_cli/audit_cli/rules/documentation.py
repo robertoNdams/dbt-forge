@@ -79,9 +79,7 @@ class MissingColumnDescriptions(AuditRule):
                         f"Model '{node.name}': {len(missing)}/{len(columns)} columns "
                         f"have no description ({preview})"
                     ),
-                    suggestion=(
-                        f"Document the columns in {node.file_path or 'schema.yml'}"
-                    ),
+                    suggestion=(f"Document the columns in {node.file_path or 'schema.yml'}"),
                 )
             )
         return findings

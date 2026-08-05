@@ -23,15 +23,15 @@ dbt-forge is the CLI that fixes all three, without asking you to migrate anythin
 
 ## Install
 
-1. Install the CLI 
+1. Install the CLI
 
 ```bash
-uv pip install git+https://github.com/your-org/dbt-forge.git 
-# Or, locally from the repo root: 
-uv pip install -e . 
+uv pip install git+https://github.com/your-org/dbt-forge.git
+# Or, locally from the repo root:
+uv pip install -e .
 ```
 
-2. Add the dbt package to your project 
+2. Add the dbt package to your project
 
 `packages.yml`:
 

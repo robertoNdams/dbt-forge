@@ -88,9 +88,7 @@ def classify_node(
 
     if tests == [] and own_exposures:
         level = Risk.CRITICAL
-    elif tests == []:
-        level = Risk.WARNING
-    elif not has_pk_test and own_exposures:
+    elif tests == [] or (not has_pk_test and own_exposures):
         level = Risk.WARNING
     else:
         level = Risk.OK

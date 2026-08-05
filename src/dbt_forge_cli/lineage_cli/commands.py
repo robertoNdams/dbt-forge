@@ -19,6 +19,7 @@ from .manifest import (
     AmbiguousNodeError,
     ManifestError,
     ManifestLoader,
+    ManifestNode,
     NodeNotFoundError,
 )
 from .renderers import (
@@ -28,7 +29,7 @@ from .renderers import (
     render_lineage_ascii,
     render_lineage_mermaid,
 )
-from .risk import Risk, classify_node
+from .risk import classify_node
 
 _console = Console()
 
@@ -51,7 +52,7 @@ def _load_manifest(
         sys.exit(2)
 
 
-def _resolve(loader: ManifestLoader, name: str):
+def _resolve(loader: ManifestLoader, name: str) -> ManifestNode:
     try:
         return loader.resolve(name)
     except NodeNotFoundError as e:
@@ -250,21 +251,25 @@ def impact(
     all_exposures = loader.exposures_downstream_of({root.unique_id})
 
     # Build a risk record for every visited node except the root itself
-    risks = []
-    # Sort visited nodes by (depth, name) for deterministic output
-    visited_with_depth = sorted(
-        ((uid, d) for uid, d in downstream.depths.items() if uid != root.unique_id),
-        key=lambda x: (x[1], loader.get(x[0]).name if loader.get(x[0]) else ""),
-    )
-    for uid, hop in visited_with_depth:
+    # Materialize (uid, depth, node) tuples first so the sort key doesn't have
+    # to re-call loader.get() (and mypy can see the node is not None)
+    resolved: list[tuple[str, int, ManifestNode]] = []
+    for uid, d in downstream.depths.items():
+        if uid == root.unique_id:
+            continue
         node = loader.get(uid)
-        if node is None or node.resource_type == "exposure":
+        if node is None:
+            continue
+        resolved.append((uid, d, node))
+    resolved.sort(key=lambda t: (t[1], t[2].name))
+
+    risks = []
+    for _uid, hop, node in resolved:
+        if node.resource_type == "exposure":
             # Don't classify exposure nodes themselves; they appear as
             # annotations on the upstream models they consume.
             continue
-        risks.append(
-            classify_node(loader, node, hop, exposures_for_root=all_exposures)
-        )
+        risks.append(classify_node(loader, node, hop, exposures_for_root=all_exposures))
 
     if output_format == "ascii":
         render_impact_ascii(

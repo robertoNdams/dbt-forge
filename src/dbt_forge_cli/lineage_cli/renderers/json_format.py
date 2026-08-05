@@ -6,9 +6,10 @@ the command usable in CI: pipe through `jq`, parse in a GitHub Action, etc.
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from ..manifest import ManifestNode
-from ..risk import NodeRisk, Risk
+from ..risk import NodeRisk
 
 
 def render_impact_json(
@@ -43,7 +44,7 @@ def render_impact_json(
     return json.dumps(payload, indent=2) + "\n"
 
 
-def _node_payload(r: NodeRisk) -> dict:
+def _node_payload(r: NodeRisk) -> dict[str, Any]:
     return {
         "name": r.node.name,
         "unique_id": r.node.unique_id,
@@ -52,9 +53,7 @@ def _node_payload(r: NodeRisk) -> dict:
         "depth": r.depth,
         "tests_count": r.tests_count,
         "has_pk_test": r.has_pk_test,
-        "exposures": [
-            {"name": e.name, "unique_id": e.unique_id} for e in r.exposures
-        ],
+        "exposures": [{"name": e.name, "unique_id": e.unique_id} for e in r.exposures],
         "level": r.level.value,
         "reasons": r.reasons,
     }

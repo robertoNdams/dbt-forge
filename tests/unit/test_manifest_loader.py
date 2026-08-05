@@ -1,12 +1,13 @@
 """Tests for the manifest loader: ingestion, name resolution, parent/child queries."""
+
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
 
 from dbt_forge_cli.lineage_cli.manifest import (
-    AmbiguousNodeError,
     ManifestError,
     ManifestLoader,
     NodeNotFoundError,
@@ -49,7 +50,7 @@ def test_resolve_unknown_raises(loader):
 
 
 def test_resolve_unknown_unique_id_raises(loader):
-    with pytest.raises(NodeNotFoundError, match="model.foo.bar"):
+    with pytest.raises(NodeNotFoundError, match=re.escape("model.foo.bar")):
         loader.resolve("model.foo.bar")
 
 
@@ -72,18 +73,14 @@ def test_tests_attached_to_model(loader):
 
 
 def test_exposures_downstream_of(loader):
-    exposures = loader.exposures_downstream_of(
-        {"model.jaffle_shop.stg_orders"}
-    )
+    exposures = loader.exposures_downstream_of({"model.jaffle_shop.stg_orders"})
     names = [e.name for e in exposures]
     assert names == ["executive_dashboard"]
 
 
 def test_exposures_downstream_terminal_leaf(loader):
     # stg_customers has no descendants — no exposures should be found
-    exposures = loader.exposures_downstream_of(
-        {"model.jaffle_shop.stg_customers"}
-    )
+    exposures = loader.exposures_downstream_of({"model.jaffle_shop.stg_customers"})
     assert exposures == []
 
 

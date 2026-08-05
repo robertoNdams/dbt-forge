@@ -1,4 +1,5 @@
 """Tests for graph BFS traversal — upstream and downstream."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -41,9 +42,7 @@ def test_downstream_from_stg_orders(loader):
 
 
 def test_downstream_with_depth_limit(loader):
-    t = traverse_downstream(
-        loader, "model.jaffle_shop.stg_orders", max_depth=1
-    )
+    t = traverse_downstream(loader, "model.jaffle_shop.stg_orders", max_depth=1)
     assert t.depths["model.jaffle_shop.fct_revenue_per_customer"] == 1
     # 2-hop must be missing
     assert "model.jaffle_shop.rpt_top_customers" not in t.depths

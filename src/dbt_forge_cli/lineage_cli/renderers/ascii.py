@@ -14,7 +14,6 @@ from ..graph import GraphTraversal
 from ..manifest import ManifestLoader, ManifestNode
 from ..risk import NodeRisk, Risk
 
-
 # ---------------------------------------------------------------------------
 # Lineage (`dbt-forge lineage`)
 # ---------------------------------------------------------------------------

@@ -58,9 +58,7 @@ class InconsistentMaterialization(AuditRule):
 
     code = "AUDIT006"
     severity = Severity.WARNING
-    description = (
-        "Model materialized as 'view' but consumed by 5+ downstream models"
-    )
+    description = "Model materialized as 'view' but consumed by 5+ downstream models"
     DOWNSTREAM_THRESHOLD = 5
 
     def check(self, loader: ManifestLoader) -> list[Finding]:

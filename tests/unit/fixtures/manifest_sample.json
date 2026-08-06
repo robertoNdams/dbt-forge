@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+    "dbt_version": "1.7.0",
+    "project_name": "jaffle_shop"
+  },
+  "nodes": {
+    "model.jaffle_shop.stg_customers": {
+      "name": "stg_customers",
+      "resource_type": "model",
+      "package_name": "jaffle_shop",
+      "schema": "main",
+      "original_file_path": "models/generated/stg_customers.sql",
+      "columns": {
+        "customer_id": {},
+        "email": {}
+      }
+    },
+    "model.jaffle_shop.stg_orders": {
+      "name": "stg_orders",
+      "resource_type": "model",
+      "package_name": "jaffle_shop",
+      "schema": "main",
+      "original_file_path": "models/generated/stg_orders.sql",
+      "columns": {
+        "order_id": {},
+        "customer_id": {},
+        "amount": {}
+      }
+    },
+    "model.jaffle_shop.fct_revenue_per_customer": {
+      "name": "fct_revenue_per_customer",
+      "resource_type": "model",
+      "package_name": "jaffle_shop",
+      "schema": "main",
+      "original_file_path": "models/generated/fct_revenue_per_customer.sql",
+      "columns": {
+        "customer_id": {},
+        "total_revenue": {}
+      }
+    },
+    "model.jaffle_shop.rpt_top_customers": {
+      "name": "rpt_top_customers",
+      "resource_type": "model",
+      "package_name": "jaffle_shop",
+      "schema": "main",
+      "original_file_path": "models/marts/rpt_top_customers.sql",
+      "columns": {}
+    },
+    "test.jaffle_shop.unique_stg_orders_order_id": {
+      "name": "unique_stg_orders_order_id",
+      "resource_type": "test",
+      "package_name": "jaffle_shop",
+      "schema": "main_dbt_test__audit",
+      "original_file_path": "models/generated/schema.yml"
+    },
+    "test.jaffle_shop.not_null_stg_orders_order_id": {
+      "name": "not_null_stg_orders_order_id",
+      "resource_type": "test",
+      "package_name": "jaffle_shop",
+      "schema": "main_dbt_test__audit",
+      "original_file_path": "models/generated/schema.yml"
+    },
+    "test.jaffle_shop.unique_fct_revenue_per_customer_customer_id": {
+      "name": "unique_fct_revenue_per_customer_customer_id",
+      "resource_type": "test",
+      "package_name": "jaffle_shop",
+      "schema": "main_dbt_test__audit",
+      "original_file_path": "models/generated/schema.yml"
+    }
+  },
+  "sources": {
+    "source.jaffle_shop.raw.orders": {
+      "name": "orders",
+      "source_name": "raw",
+      "package_name": "jaffle_shop",
+      "schema": "main",
+      "original_file_path": "models/sources.yml"
+    },
+    "source.jaffle_shop.raw.customers": {
+      "name": "customers",
+      "source_name": "raw",
+      "package_name": "jaffle_shop",
+      "schema": "main",
+      "original_file_path": "models/sources.yml"
+    }
+  },
+  "exposures": {
+    "exposure.jaffle_shop.executive_dashboard": {
+      "name": "executive_dashboard",
+      "resource_type": "exposure",
+      "package_name": "jaffle_shop",
+      "original_file_path": "models/exposures.yml"
+    }
+  },
+  "parent_map": {
+    "model.jaffle_shop.stg_customers": ["source.jaffle_shop.raw.customers"],
+    "model.jaffle_shop.stg_orders": ["source.jaffle_shop.raw.orders"],
+    "model.jaffle_shop.fct_revenue_per_customer": ["model.jaffle_shop.stg_orders"],
+    "model.jaffle_shop.rpt_top_customers": ["model.jaffle_shop.fct_revenue_per_customer"],
+    "test.jaffle_shop.unique_stg_orders_order_id": ["model.jaffle_shop.stg_orders"],
+    "test.jaffle_shop.not_null_stg_orders_order_id": ["model.jaffle_shop.stg_orders"],
+    "test.jaffle_shop.unique_fct_revenue_per_customer_customer_id": ["model.jaffle_shop.fct_revenue_per_customer"],
+    "exposure.jaffle_shop.executive_dashboard": ["model.jaffle_shop.rpt_top_customers"]
+  },
+  "child_map": {
+    "source.jaffle_shop.raw.customers": ["model.jaffle_shop.stg_customers"],
+    "source.jaffle_shop.raw.orders": ["model.jaffle_shop.stg_orders"],
+    "model.jaffle_shop.stg_customers": [],
+    "model.jaffle_shop.stg_orders": [
+      "model.jaffle_shop.fct_revenue_per_customer",
+      "test.jaffle_shop.unique_stg_orders_order_id",
+      "test.jaffle_shop.not_null_stg_orders_order_id"
+    ],
+    "model.jaffle_shop.fct_revenue_per_customer": [
+      "model.jaffle_shop.rpt_top_customers",
+      "test.jaffle_shop.unique_fct_revenue_per_customer_customer_id"
+    ],
+    "model.jaffle_shop.rpt_top_customers": ["exposure.jaffle_shop.executive_dashboard"]
+  }
+}

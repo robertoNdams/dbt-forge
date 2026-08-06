@@ -4,6 +4,9 @@
 Subcommands:
   generate   — validate config + lineage, then dispatch to dbt run-operation.
   validate   — validate config + lineage only (alias for `generate --validate-only`).
+  lineage    — inspect upstream/downstream dependencies of a model.
+  impact     — quantify the downstream risk surface of a change.
+  audit      — static linter for dbt projects (missing tests, dead code, etc.).
 """
 
 from __future__ import annotations
@@ -193,6 +196,23 @@ def generate(
 def validate(config_path: Path) -> None:
     """Validate config + lineage without invoking dbt."""
     _validate(config_path)
+
+
+# ---------------------------------------------------------------------------
+# Sub-package commands (lineage / impact / audit)
+#
+# Imported lazily at module bottom to keep the top of the file focused on the
+# generate/validate commands. Each sub-package is self-contained and exposes
+# its click command as a top-level attribute.
+# ---------------------------------------------------------------------------
+
+from .audit_cli.commands import audit as _audit_cmd  # noqa: E402
+from .lineage_cli.commands import impact as _impact_cmd  # noqa: E402
+from .lineage_cli.commands import lineage as _lineage_cmd  # noqa: E402
+
+cli.add_command(_lineage_cmd)
+cli.add_command(_impact_cmd)
+cli.add_command(_audit_cmd)
 
 
 def main() -> None:  # entrypoint for pyproject.toml [project.scripts]

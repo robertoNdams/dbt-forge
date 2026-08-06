@@ -21,7 +21,6 @@ repos:
       - id: ruff-check
         args: [ --fix ]
       - id: ruff-format
-        args: [ --check ]
 
   # Type-check on commit (only the package, not tests — tests run in CI)
   - repo: https://github.com/pre-commit/mirrors-mypy
